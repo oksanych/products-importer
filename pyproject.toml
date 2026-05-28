@@ -1,0 +1,10 @@
+[project]
+name = "product-importer-mvp"
+version = "0.1.0"
+description = "Local CLI for generating Prom-compatible XLSX imports from modniy-shopping.com.ua product pages."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "lxml>=6.1,<7",
+    "openpyxl>=3.1,<4",
+]
