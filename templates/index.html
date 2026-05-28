@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product Importer</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="tool-panel" aria-labelledby="page-title">
+        <div class="intro">
+          <p class="eyebrow">Prom XLSX</p>
+          <h1 id="page-title">Генератор імпорту товарів</h1>
+        </div>
+
+        <div
+          class="alert{% if not error %} is-hidden{% endif %}"
+          data-message
+          role="{% if error %}alert{% else %}status{% endif %}"
+          aria-live="polite"
+        >{{ error or "" }}</div>
+
+        <form class="import-form" action="/generate" method="post" data-form>
+          <label for="product_url">Посилання на товар</label>
+          <input
+            id="product_url"
+            name="product_url"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://modniy-shopping.com.ua/ua/p3064637917-product.html"
+            value="{{ product_url }}"
+            required
+          >
+
+          <label for="color_id">Код кольору</label>
+          <input
+            id="color_id"
+            name="color_id"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]{2}"
+            maxlength="2"
+            placeholder="65"
+            value="{{ color_id }}"
+            required
+          >
+
+          <button type="submit" data-submit>Згенерувати XLSX</button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("[data-form]");
+      const button = document.querySelector("[data-submit]");
+      const message = document.querySelector("[data-message]");
+      const defaultButtonText = button.textContent;
+      const loadingButtonText = "Генерується...";
+      const successMessage = "Файл згенеровано. Завантаження розпочато.";
+      const fallbackErrorMessage = "Не вдалося згенерувати файл. Перевірте посилання або спробуйте інший товар.";
+
+      function showMessage(text, type) {
+        message.textContent = text;
+        message.classList.remove("is-hidden", "success", "error");
+        message.classList.add(type);
+        message.setAttribute("role", type === "error" ? "alert" : "status");
+      }
+
+      function hideMessage() {
+        message.textContent = "";
+        message.classList.add("is-hidden");
+        message.classList.remove("success", "error");
+        message.setAttribute("role", "status");
+      }
+
+      function filenameFromDisposition(disposition) {
+        const fallback = "import-products.xlsx";
+        if (!disposition) {
+          return fallback;
+        }
+        const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+        if (utf8Match) {
+          return decodeURIComponent(utf8Match[1].replace(/"/g, ""));
+        }
+        const match = disposition.match(/filename="?([^";]+)"?/i);
+        return match ? match[1] : fallback;
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function clearGeneratedFormFields() {
+        form.elements.namedItem("product_url").value = "";
+        form.elements.namedItem("color_id").value = "";
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        hideMessage();
+        button.disabled = true;
+        button.textContent = loadingButtonText;
+
+        try {
+          const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form),
+            headers: {
+              "X-Requested-With": "fetch"
+            }
+          });
+
+          if (!response.ok) {
+            let errorMessage = fallbackErrorMessage;
+            try {
+              const payload = await response.json();
+              if (payload.error) {
+                errorMessage = payload.error;
+              }
+            } catch (_error) {
+              errorMessage = fallbackErrorMessage;
+            }
+            showMessage(errorMessage, "error");
+            return;
+          }
+
+          const blob = await response.blob();
+          const filename = filenameFromDisposition(response.headers.get("Content-Disposition"));
+          downloadBlob(blob, filename);
+          showMessage(successMessage, "success");
+          clearGeneratedFormFields();
+        } catch (_error) {
+          showMessage(fallbackErrorMessage, "error");
+        } finally {
+          button.disabled = false;
+          button.textContent = defaultButtonText;
+        }
+      });
+    </script>
+  </body>
+</html>

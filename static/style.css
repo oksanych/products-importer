@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f5f0;
+  --panel: #ffffff;
+  --text: #1d2528;
+  --muted: #667277;
+  --border: #d9dedb;
+  --accent: #176f6b;
+  --accent-strong: #0e5451;
+  --danger-bg: #fff1ea;
+  --danger-border: #e0a186;
+  --danger-text: #79361c;
+  --success-bg: #eaf7f3;
+  --success-border: #78bda9;
+  --success-text: #17604f;
+  --focus: #b58b23;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(247, 245, 240, 0.96)),
+    var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page-shell {
+  width: min(100% - 32px, 760px);
+  min-height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  align-items: center;
+  padding: 32px 0;
+}
+
+.tool-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: clamp(24px, 5vw, 40px);
+  box-shadow: 0 18px 45px rgba(29, 37, 40, 0.08);
+}
+
+.intro {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.alert {
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  line-height: 1.45;
+}
+
+.alert.success {
+  border-color: var(--success-border);
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.alert.error {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.alert.is-hidden {
+  display: none;
+}
+
+.import-form {
+  display: grid;
+  gap: 12px;
+}
+
+label {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text);
+  font: inherit;
+}
+
+input:focus {
+  border-color: var(--focus);
+  outline: 3px solid rgba(181, 139, 35, 0.2);
+}
+
+button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  margin-top: 8px;
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+@media (max-width: 540px) {
+  .page-shell {
+    width: min(100% - 24px, 760px);
+    align-items: start;
+    padding-top: 20px;
+  }
+
+  .tool-panel {
+    padding: 22px;
+  }
+}

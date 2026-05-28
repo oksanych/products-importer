@@ -97,6 +97,10 @@ def remove_service_model_code(text: str, brand: str, sku: str) -> str:
     result = text or ""
     if brand and sku:
         result = re.sub(rf"\b{re.escape(brand)}\s+{re.escape(sku)}\b", "", result, flags=re.I)
+    if sku:
+        base_sku = re.sub(r"-\d+$", "", str(sku).strip())
+        sku_pattern = rf"{re.escape(base_sku)}(?:-\d+)?"
+        result = re.sub(rf"\b[A-ZА-ЯІЇЄҐ][A-Za-zА-Яа-яІіЇїЄєҐґ]+\s+{sku_pattern}\b", "", result)
     return _collapse(result)
 
 

@@ -58,6 +58,32 @@ To choose another output directory, pass `--output-dir`:
 python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --output-dir output/live-test
 ```
 
+## Local Browser UI
+
+Start the local UI:
+
+```bash
+python3 run_ui.py
+```
+
+The app opens at:
+
+```text
+http://127.0.0.1:8000
+```
+
+It accepts a `modniy-shopping.com.ua` product URL and a required 2-digit color ID, then downloads the generated Prom XLSX file. UI-generated files are saved in unique run folders under:
+
+```text
+output/generated-files/ui-runs/
+```
+
+To start the UI without opening a browser automatically:
+
+```bash
+python3 run_ui.py --no-browser
+```
+
 ## Fixture Testing
 
 Generate from a local fixture without fetching the live page:

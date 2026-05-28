@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.models.product import Product, SizeVariant
-from src.normalizer.text import build_description
+from src.normalizer.text import build_description, title_for_size
 
 
 class TextNormalizerTests(unittest.TestCase):
@@ -40,6 +40,25 @@ class TextNormalizerTests(unittest.TestCase):
             description,
         )
         self.assertLess(description.index("<img"), description.index("<table>"))
+
+    def test_removes_visible_service_code_when_structured_brand_differs(self):
+        product = Product(
+            url="https://modniy-shopping.com.ua/ua/p3058885266-product.html",
+            product_id="3058885266",
+            name="Купальник цілисний Fuba 26069 зелений 52 54 56 58 60 розмір",
+            sku="26069",
+            brand="Z. Five",
+            price="763.00",
+            description="Купальник Fuba 26069 великих розмірів.",
+            images=["https://images.prom.ua/610000001_w640_h640_product-0.jpg"],
+            size_table=[SizeVariant(ua_size="52")],
+        )
+
+        title = title_for_size(product, "52", "uk")
+        description = build_description(product, "uk")
+
+        self.assertEqual(title, "Купальник цілисний зелений 52")
+        self.assertNotIn("Fuba 26069", description)
 
 
 if __name__ == "__main__":
