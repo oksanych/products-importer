@@ -69,6 +69,12 @@ class XlsxContractTests(unittest.TestCase):
         self.assertEqual({row["ID_Подарунків"] for row in rows}, {""})
         self.assertEqual({row["Супутні"] for row in rows}, {""})
         self.assertEqual({row["ID_Супутніх"] for row in rows}, {""})
+        self.assertEqual(rows[0]["Опис"].count("<img"), len(product.images))
+        self.assertEqual(rows[0]["Опис_укр"].count("<img"), len(product.images))
+        self.assertIn('<p style="text-align:center"><img', rows[0]["Опис"])
+        self.assertIn('<p style="text-align:center"><img', rows[0]["Опис_укр"])
+        self.assertLess(rows[0]["Опис"].index("<img"), rows[0]["Опис"].index("<table>"))
+        self.assertNotIn("<img", rows[0]["Посилання_зображення"])
 
         names_by_row = [tuple(name for name, _unit, _value in row["_characteristics"]) for row in rows]
         self.assertEqual(len(set(names_by_row)), 1)

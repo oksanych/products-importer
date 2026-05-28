@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from html import escape
+from posixpath import basename
 import re
+from urllib.parse import urlparse
 
 from src.models.product import Product
 
@@ -47,12 +50,14 @@ def build_description(product: Product, language: str) -> str:
         title = translate_uk_to_ru(title)
         description = translate_uk_to_ru(description)
     description = remove_service_model_code(description, product.brand, product.sku)
+    image_html = _image_html(product.images, title)
     table = _size_table_html(product)
     return "\n".join(
         part
         for part in [
             f"<h2>{title}</h2>",
             f"<p>{description}</p>" if description else "",
+            image_html,
             table,
         ]
         if part
@@ -123,8 +128,21 @@ def _size_table_html(product: Product) -> str:
     return "".join(rows)
 
 
+def _image_html(images: list[str], title: str) -> str:
+    rows = []
+    for image in images:
+        src = (image or "").strip()
+        if not src:
+            continue
+        alt = basename(urlparse(src).path) or title
+        rows.append(
+            f'<p style="text-align:center"><img alt="{escape(alt, quote=True)}" '
+            f'src="{escape(src, quote=True)}" /></p>'
+        )
+    return "\n".join(rows)
+
+
 def _collapse(value: str) -> str:
     value = re.sub(r"\s+", " ", value or "").strip()
     value = re.sub(r"\s+([,.;:!?])", r"\1", value)
     return value
-
