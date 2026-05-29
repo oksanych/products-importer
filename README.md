@@ -93,6 +93,14 @@ To disable automatic reload:
 python3 run_ui.py --no-browser --no-reload
 ```
 
+To clean local UI-generated XLSX files:
+
+```bash
+rm -rf output/generated-files/ui-runs/*
+```
+
+These files are generated artifacts and are ignored by git.
+
 ## Fixture Testing
 
 Generate from a local fixture without fetching the live page:
