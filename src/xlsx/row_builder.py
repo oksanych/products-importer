@@ -17,13 +17,14 @@ def numeric_crc32_group_id(product_id: str) -> int:
     return (zlib.crc32(product_id.encode("ascii")) % 900_000_000) + 1
 
 
-def build_xlsx_rows(product: Product, *, color_id: str) -> list[dict]:
+def build_xlsx_rows(product: Product, *, color_id: str, price_override: int | None = None) -> list[dict]:
     rows = []
     group_id = str(numeric_crc32_group_id(product.product_id))
     images = ", ".join(product.images)
     description_uk = build_description(product, "uk")
     description_ru = build_description(product, "ru")
     product_code = format_product_code(product.sku, color_id)
+    price = price_override if price_override is not None else product.price
 
     for size in product.size_table:
         row = {
@@ -37,7 +38,7 @@ def build_xlsx_rows(product: Product, *, color_id: str) -> list[dict]:
             "Опис": description_ru,
             "Опис_укр": description_uk,
             "Тип_товару": "r",
-            "Ціна": product.price,
+            "Ціна": price,
             "Валюта": product.currency or "UAH",
             "Одиниця_виміру": "шт.",
             "Мінімальний_обсяг_замовлення": "",

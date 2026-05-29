@@ -8,6 +8,7 @@ from typing import Callable
 from urllib.parse import urlparse
 
 from src.main import generate_import_file
+from src.normalizer.price import validate_import_price
 from src.normalizer.sku import validate_color_id
 
 
@@ -16,6 +17,7 @@ DEFAULT_TEMPLATE_PATH = Path("templates/export-template.xlsx")
 DEFAULT_OUTPUT_ROOT = Path("output/generated-files/ui-runs")
 WRONG_DOMAIN_MESSAGE = "Вставте посилання на товар з modniy-shopping.com.ua."
 INVALID_COLOR_ID_MESSAGE = "Код кольору має складатися рівно з 2 цифр, наприклад 65."
+INVALID_IMPORT_PRICE_MESSAGE = "Ціна має бути цілим числом у гривнях, наприклад 1000."
 GENERATION_FAILED_MESSAGE = "Не вдалося згенерувати файл. Перевірте посилання або спробуйте інший товар."
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,7 @@ class GenerationError(AppServiceError):
 def generate_from_user_input(
     product_url: str | None,
     color_id: str | None,
+    import_price: str | None,
     *,
     template_path: str | Path = DEFAULT_TEMPLATE_PATH,
     output_root: str | Path = DEFAULT_OUTPUT_ROOT,
@@ -51,7 +54,9 @@ def generate_from_user_input(
 ) -> GeneratedFile:
     trimmed_url = (product_url or "").strip()
     trimmed_color_id = (color_id or "").strip()
+    trimmed_import_price = (import_price or "").strip()
     valid_color_id = _validate_color_id_for_ui(trimmed_color_id)
+    valid_import_price = _validate_import_price_for_ui(trimmed_import_price)
     _validate_product_url(trimmed_url)
 
     run_dir = Path(output_root) / uuid.uuid4().hex
@@ -64,6 +69,7 @@ def generate_from_user_input(
                 str(template_path),
                 str(run_dir),
                 color_id=valid_color_id,
+                price_override=valid_import_price,
             )
         )
     except Exception as error:
@@ -78,6 +84,13 @@ def _validate_color_id_for_ui(color_id: str) -> str:
         return validate_color_id(color_id)
     except ValueError as error:
         raise InputValidationError(INVALID_COLOR_ID_MESSAGE) from error
+
+
+def _validate_import_price_for_ui(import_price: str) -> int:
+    try:
+        return validate_import_price(import_price)
+    except ValueError as error:
+        raise InputValidationError(INVALID_IMPORT_PRICE_MESSAGE) from error
 
 
 def _validate_product_url(product_url: str) -> None:

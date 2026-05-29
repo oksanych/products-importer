@@ -29,9 +29,14 @@ def favicon():
 
 
 @app.post("/generate")
-def generate(request: Request, product_url: str = Form(...), color_id: str = Form(...)):
+def generate(
+    request: Request,
+    product_url: str = Form(...),
+    color_id: str = Form(...),
+    import_price: str = Form(...),
+):
     try:
-        generated = generate_from_user_input(product_url, color_id)
+        generated = generate_from_user_input(product_url, color_id, import_price)
     except AppServiceError as error:
         if request.headers.get("x-requested-with") == "fetch":
             return JSONResponse(
@@ -43,6 +48,7 @@ def generate(request: Request, product_url: str = Form(...), color_id: str = For
             error=error.user_message,
             product_url=product_url,
             color_id=color_id,
+            import_price=import_price,
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -59,6 +65,7 @@ def _render_form(
     error: str | None = None,
     product_url: str = "",
     color_id: str = "",
+    import_price: str = "",
     status_code: int = status.HTTP_200_OK,
 ):
     return templates.TemplateResponse(
@@ -69,6 +76,7 @@ def _render_form(
             "error": error,
             "product_url": product_url,
             "color_id": color_id,
+            "import_price": import_price,
         },
         status_code=status_code,
     )

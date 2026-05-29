@@ -135,6 +135,28 @@ class XlsxContractTests(unittest.TestCase):
                 )
             self.assertEqual(generated_chain, EXPECTED_GROUP_CHAIN)
 
+    def test_writes_manual_price_override_as_numeric_value(self):
+        html = (FIXTURES / "modniy_2999460479.html").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = generate_import_file_from_html(
+                html,
+                "https://modniy-shopping.com.ua/ua/p2999460479-product.html",
+                template_path=str(TEMPLATE),
+                output_dir=tmpdir,
+                color_id="65",
+                price_override=1000,
+            )
+
+            workbook = load_workbook(output_path, data_only=False)
+            sheet = workbook["Export Products Sheet"]
+            headers = [cell.value for cell in sheet[1]]
+            price_col = headers.index("Ціна") + 1
+            prices = [sheet.cell(row_number, price_col).value for row_number in range(2, sheet.max_row + 1)]
+            data_types = [sheet.cell(row_number, price_col).data_type for row_number in range(2, sheet.max_row + 1)]
+
+        self.assertEqual(prices, [1000, 1000, 1000, 1000, 1000])
+        self.assertEqual(data_types, ["n", "n", "n", "n", "n"])
+
     def test_writes_formatted_product_code_for_sku_with_suffix(self):
         html = (FIXTURES / "modniy_3028043687.html").read_text(encoding="utf-8")
         product = parse_product_html(html, "https://modniy-shopping.com.ua/ua/p3028043687-product.html")

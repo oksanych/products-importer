@@ -25,13 +25,13 @@ python3 -m unittest discover -s tests -v
 Generate from a live URL:
 
 ```bash
-python3 generate_import.py "<product-url>" --color-id 65
+python3 generate_import.py "<product-url>" --color-id 65 --import-price 1000
 ```
 
 Generate from fixture:
 
 ```bash
-python3 generate_import.py "<product-url>" --from-html fixtures/modniy_3064637917.html --color-id 65
+python3 generate_import.py "<product-url>" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000
 ```
 
 ## Important Rules
@@ -41,6 +41,7 @@ python3 generate_import.py "<product-url>" --from-html fixtures/modniy_306463791
   - `Export Products Sheet` must contain only the header row.
   - `Export Groups Sheet` must keep the minimal group chain: `Женщинам -> Одежда -> Купальники`.
 - Keep `--color-id` required and exactly two digits.
+- Keep `--import-price` required and a whole UAH amount.
 - `Код_товару` format is `MS` + SKU without trailing `-digits` + color ID.
 - Do not change `Ідентифікатор_товару` format without checking Prom documentation.
 - For new products, keep `Унікальний_ідентифікатор` empty.
