@@ -47,6 +47,18 @@
             required
           >
 
+          <label for="import_price">Ціна для імпорту</label>
+          <input
+            id="import_price"
+            name="import_price"
+            type="text"
+            inputmode="decimal"
+            maxlength="13"
+            placeholder="1000"
+            value="{{ import_price }}"
+            required
+          >
+
           <button type="submit" data-submit>Згенерувати XLSX</button>
         </form>
       </section>
@@ -102,6 +114,7 @@
       function clearGeneratedFormFields() {
         form.elements.namedItem("product_url").value = "";
         form.elements.namedItem("color_id").value = "";
+        form.elements.namedItem("import_price").value = "";
       }
 
       form.addEventListener("submit", async (event) => {

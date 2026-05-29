@@ -52,7 +52,46 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("Check color parameter", result.stderr)
 
-    def test_generates_xlsx_with_valid_color_id(self):
+    def test_rejects_missing_import_price_with_clear_message(self):
+        result = self.run_cli(URL, "--from-html", str(FIXTURE), "--template", str(TEMPLATE), "--color-id", "65")
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Check price parameter", result.stderr)
+
+    def test_rejects_price_flag_without_value_with_clear_message(self):
+        result = self.run_cli(
+            URL,
+            "--from-html",
+            str(FIXTURE),
+            "--template",
+            str(TEMPLATE),
+            "--color-id",
+            "65",
+            "--import-price",
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Check price parameter", result.stderr)
+
+    def test_rejects_invalid_import_price_with_clear_message(self):
+        for import_price in ["0", "abc", "999.50"]:
+            with self.subTest(import_price=import_price):
+                result = self.run_cli(
+                    URL,
+                    "--from-html",
+                    str(FIXTURE),
+                    "--template",
+                    str(TEMPLATE),
+                    "--color-id",
+                    "65",
+                    "--import-price",
+                    import_price,
+                )
+
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("Check price parameter", result.stderr)
+
+    def test_generates_xlsx_with_valid_color_id_and_import_price(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             result = self.run_cli(
                 URL,
@@ -64,6 +103,8 @@ class CliTests(unittest.TestCase):
                 tmpdir,
                 "--color-id",
                 "65",
+                "--import-price",
+                "1000",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -72,8 +113,11 @@ class CliTests(unittest.TestCase):
             sheet = workbook["Export Products Sheet"]
             headers = [cell.value for cell in sheet[1]]
             product_code_col = headers.index("Код_товару") + 1
+            price_col = headers.index("Ціна") + 1
 
             self.assertEqual(sheet.cell(2, product_code_col).value, "MS5880065")
+            self.assertEqual(sheet.cell(2, price_col).value, 1000)
+            self.assertEqual(sheet.cell(2, price_col).data_type, "n")
 
 
 if __name__ == "__main__":

@@ -10,13 +10,13 @@ This plan covers local usage only. It does not include VPS deployment, DNS, Ngin
 
 Use a small FastAPI app with Jinja2 templates and plain CSS.
 
-The UI should wrap the existing generation logic instead of replacing the CLI. The current CLI must keep working exactly as before.
+The UI should wrap the existing generation logic instead of replacing the CLI. CLI and UI should share the same required manual inputs: product URL, color ID, and import price.
 
 Local flow:
 
 ```text
 User opens http://127.0.0.1:8000
--> enters product URL and 2-digit color ID
+-> enters product URL, 2-digit color ID, and import price
 -> FastAPI validates input
 -> existing core generates XLSX
 -> browser downloads the file
@@ -26,7 +26,7 @@ User opens http://127.0.0.1:8000
 
 Included:
 
-- Local web form with product URL and color ID fields.
+- Local web form with product URL, color ID, and import price fields.
 - XLSX download after successful generation.
 - Friendly validation and error messages.
 - A small service layer between the UI and the existing core.
@@ -82,6 +82,7 @@ Responsibilities:
 
 - Trim user input.
 - Validate `color_id` with the existing `validate_color_id`.
+- Validate `import_price` with the shared import price validator.
 - Validate URL using `urllib.parse.urlparse`.
 - Allow only:
   - scheme: `https`
@@ -106,7 +107,7 @@ Routes:
   - no auth;
   - intended for local-only usage.
 - `POST /generate`
-  - accepts `product_url` and `color_id`;
+  - accepts `product_url`, `color_id`, and `import_price`;
   - calls `generate_from_user_input`;
   - returns XLSX via `FileResponse`;
   - on validation or generation error, re-renders the form with a friendly message.
@@ -130,6 +131,9 @@ python3 run_ui.py
 Expected behavior:
 
 - starts Uvicorn on `127.0.0.1:8000`;
+- enables automatic reload for local development by default;
+- watches Python, HTML, and CSS files for reload;
+- supports `--no-reload` when a stable non-reloading process is needed;
 - optionally opens `http://127.0.0.1:8000` in the default browser;
 - does not expose the app on the local network.
 
@@ -140,6 +144,7 @@ The page should be simple and friendly:
 - clear title;
 - product URL input;
 - color ID input with example `65`;
+- import price input with example `1000`;
 - submit button;
 - optional loading or disabled state while generation is running;
 - clear error message for invalid input or failed generation.
@@ -160,6 +165,12 @@ Friendly messages:
 
 ```text
 Код кольору має складатися рівно з 2 цифр, наприклад 65.
+```
+
+- Invalid import price:
+
+```text
+Ціна має бути цілим числом у гривнях, наприклад 1000.
 ```
 
 - Generation failure:
@@ -183,15 +194,22 @@ Add service tests:
 - rejects wrong domain;
 - rejects non-HTTPS URL;
 - rejects invalid color ID;
+- rejects invalid import price;
 - trims input;
 - returns generated file metadata for valid input with mocked generator.
 
 Add FastAPI route tests:
 
 - `GET /` returns `200`;
-- form page contains product URL and color ID fields;
+- form page contains product URL, color ID, and import price fields;
 - invalid `POST /generate` returns `400`;
 - valid `POST /generate` returns XLSX media type with mocked service.
+
+Add local runner tests:
+
+- `python3 run_ui.py` configures Uvicorn with `reload=True`;
+- default reload includes `*.py`, `*.html`, and `*.css`;
+- `python3 run_ui.py --no-reload` configures Uvicorn with `reload=False`.
 
 Manual check:
 
@@ -212,7 +230,7 @@ http://127.0.0.1:8000
 5. Confirm CLI still works:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000
 ```
 
 ## Definition of Done
@@ -221,7 +239,9 @@ The local UI MVP is done when:
 
 - all existing CLI tests pass;
 - new service/UI tests pass;
+- runner reload tests pass;
 - `python3 run_ui.py` starts the local UI;
+- local code/template/static changes reload automatically;
 - the form generates and downloads XLSX;
 - invalid input shows friendly messages;
 - repeated generation of the same product does not overwrite earlier UI output;

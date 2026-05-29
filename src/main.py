@@ -14,12 +14,20 @@ def generate_import_file(
     output_dir: str,
     *,
     color_id: str,
+    price_override: int | None = None,
     debug_html: str | None = None,
 ) -> str:
     html = fetch_html(product_url)
     if debug_html:
         Path(debug_html).write_text(html, encoding="utf-8")
-    return generate_import_file_from_html(html, product_url, template_path, output_dir, color_id=color_id)
+    return generate_import_file_from_html(
+        html,
+        product_url,
+        template_path,
+        output_dir,
+        color_id=color_id,
+        price_override=price_override,
+    )
 
 
 def generate_import_file_from_html(
@@ -29,9 +37,10 @@ def generate_import_file_from_html(
     output_dir: str,
     *,
     color_id: str,
+    price_override: int | None = None,
 ) -> str:
     product = parse_product_html(html, product_url)
-    rows = build_xlsx_rows(product, color_id=color_id)
+    rows = build_xlsx_rows(product, color_id=color_id, price_override=price_override)
     validate_rows(rows)
     return write_xlsx_from_template(template_path, rows, output_dir)
 

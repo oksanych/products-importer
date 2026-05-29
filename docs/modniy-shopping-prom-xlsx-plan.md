@@ -65,6 +65,14 @@
   - `58800-25` + `05` -> `MS5880005`
 - Однаковий `Код_товару` для всіх розмірів одного товару/кольору є очікуваною поведінкою; унікальність різновидів забезпечує `Ідентифікатор_товару`.
 
+**Import Price Strategy**
+- Під час запуску скрипта обов'язково передавати `--import-price`.
+- `--import-price` має бути цілою сумою в UAH, наприклад `1000`.
+- Значення `1000.00` і `1000,00` допустимі та нормалізуються до `1000`.
+- Якщо `--import-price` відсутній, переданий без значення або має неправильний формат, скрипт має завершитися до генерації XLSX.
+- У терміналі при такій помилці має бути текст `Check price parameter`.
+- Значення записується в колонку `Ціна` для всіх рядків різновидів.
+
 **Parser**
 - Брати `name`, `sku`, `brand`, `price`, `currency`, `availability`, `description` з JSON-LD `Product`.
 - Брати характеристики з `table[data-qaid="characteristics_block"]`.
@@ -78,19 +86,23 @@
 - Базовий запуск:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000
 ```
 
 - Запуск із локального HTML fixture:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --from-html fixtures/modniy_3064637917.html --color-id 65
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000
 ```
 
 - Помилки `--color-id`:
   - без `--color-id` -> exit code `2`, stderr містить `Check color parameter`;
   - `--color-id` без значення -> exit code `2`, stderr містить `Check color parameter`;
   - `--color-id 5`, `--color-id 005`, `--color-id ab` -> exit code `2`, stderr містить `Check color parameter`.
+- Помилки `--import-price`:
+  - без `--import-price` -> exit code `2`, stderr містить `Check price parameter`;
+  - `--import-price` без значення -> exit code `2`, stderr містить `Check price parameter`;
+  - `--import-price 0`, `--import-price abc`, `--import-price 999.50` -> exit code `2`, stderr містить `Check price parameter`.
 
 **Row Builder**
 - Один рядок на кожен розмір.
@@ -134,7 +146,7 @@ python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitny
   - `Ідентифікатор_товару` унікальний;
   - `Ідентифікатор_товару` відповідає шаблону `modniy-{product_id}-{ua_size}`;
   - `Код_товару` відповідає правилу `MS{sku_without_trailing_numeric_suffix}{color_id}`;
-  - для fixture `3028043687`, де `sku = 58800-25`, з `--color-id 65` очікувати `Код_товару = MS5880065`;
+  - для fixture `3028043687`, де `sku = 58800-25`, з `--color-id 65 --import-price 1000` очікувати `Код_товару = MS5880065` і `Ціна = 1000`;
   - `ID_групи_різновидів` числовий, у межах `0..999999999`;
   - `ID_групи_різновидів` однаковий для всіх розмірів одного товару;
   - усі рядки групи мають однаковий набір характеристик;
@@ -144,7 +156,10 @@ python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitny
   - без `--color-id` -> exit code `2`, stderr містить `Check color parameter`;
   - `--color-id` без значення -> exit code `2`, stderr містить `Check color parameter`;
   - `--color-id 5` або `--color-id ab` -> exit code `2`, stderr містить `Check color parameter`;
-  - `--color-id 65` з `--from-html` генерує XLSX.
+  - без `--import-price` -> exit code `2`, stderr містить `Check price parameter`;
+  - `--import-price` без значення -> exit code `2`, stderr містить `Check price parameter`;
+  - `--import-price 0`, `--import-price abc`, `--import-price 999.50` -> exit code `2`, stderr містить `Check price parameter`;
+  - `--color-id 65 --import-price 1000` з `--from-html` генерує XLSX.
 - Future update-mode tests:
   - якщо є експорт Prom із заповненим `Унікальний_ідентифікатор`, він переноситься в новий XLSX;
   - якщо `Унікальний_ідентифікатор` відсутній для вже імпортованого товару, валідатор має попереджати про ризик дублювання.

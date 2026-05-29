@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from src.main import generate_import_file, generate_import_file_from_html
+from src.normalizer.price import validate_import_price
 from src.normalizer.sku import validate_color_id
 
 
@@ -15,6 +16,7 @@ def main() -> None:
     parser.add_argument("--debug-html", help="Optional path where fetched HTML should be saved")
     parser.add_argument("--from-html", help="Read source HTML from a local file instead of fetching the URL")
     parser.add_argument("--color-id", nargs="?", help="Required 2-digit color identifier, for example 65")
+    parser.add_argument("--import-price", nargs="?", help="Required import price in whole UAH, for example 1000")
     args = parser.parse_args()
 
     try:
@@ -22,11 +24,30 @@ def main() -> None:
     except ValueError as error:
         parser.error(str(error))
 
+    try:
+        import_price = validate_import_price(args.import_price)
+    except ValueError as error:
+        parser.error(str(error))
+
     if args.from_html:
         html = Path(args.from_html).read_text(encoding="utf-8")
-        output = generate_import_file_from_html(html, args.url, args.template, args.output_dir, color_id=color_id)
+        output = generate_import_file_from_html(
+            html,
+            args.url,
+            args.template,
+            args.output_dir,
+            color_id=color_id,
+            price_override=import_price,
+        )
     else:
-        output = generate_import_file(args.url, args.template, args.output_dir, color_id=color_id, debug_html=args.debug_html)
+        output = generate_import_file(
+            args.url,
+            args.template,
+            args.output_dir,
+            color_id=color_id,
+            price_override=import_price,
+            debug_html=args.debug_html,
+        )
     print(f"Generated file: {output}")
 
 
