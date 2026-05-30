@@ -39,7 +39,7 @@ python3 generate_import.py "<product-url>" --from-html fixtures/modniy_306463791
 - Do not commit `.venv/`, `output/`, `__pycache__/`, `.DS_Store`, or generated XLSX files.
 - Keep `templates/export-template.xlsx` sanitized:
   - `Export Products Sheet` must contain only the header row.
-  - `Export Groups Sheet` must keep the minimal group chain: `Женщинам -> Одежда -> Купальники`.
+  - `Export Groups Sheet` must keep only the existing Modashop root category `31935910 / Купальники`.
 - Keep `--color-id` required and exactly two digits.
 - Keep `--import-price` required and a whole UAH amount.
 - `Код_товару` format is `MS` + SKU without trailing `-digits` + color ID.
@@ -58,6 +58,6 @@ python3 -m unittest discover -s tests -v
 For XLSX-related changes, also generate one fixture XLSX and inspect that:
 
 - product sheet has 128 columns;
-- group sheet has the expected group chain;
+- group sheet has only `31935910 / Купальники`;
 - generated rows have empty `Унікальний_ідентифікатор`;
 - `ID_групи_різновидів` is numeric and shared across sizes.

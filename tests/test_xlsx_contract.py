@@ -15,11 +15,14 @@ from src.xlsx.row_builder import build_xlsx_rows, numeric_crc32_group_id
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "fixtures"
 TEMPLATE = ROOT / "templates" / "export-template.xlsx"
-EXPECTED_GROUP_CHAIN = [
-    (85901631, "Женщинам", None),
-    (85901740, "Одежда", 85901631),
-    (85929329, "Купальники", 85901740),
-]
+EXPECTED_GROUP = {
+    "Номер_групи": 31935910,
+    "Назва_групи": "Купальники",
+    "Назва_групи_укр": "Купальники",
+    "Ідентифікатор_групи": "31935910",
+    "Номер_батьківської_групи": None,
+    "Ідентифікатор_батьківської_групи": None,
+}
 
 
 class XlsxContractTests(unittest.TestCase):
@@ -35,17 +38,12 @@ class XlsxContractTests(unittest.TestCase):
         group_sheet = workbook["Export Groups Sheet"]
         group_headers = [cell.value for cell in group_sheet[1]]
         header_to_index = {header: index + 1 for index, header in enumerate(group_headers) if header}
-        self.assertEqual(group_sheet.max_row, 4)
-        actual_chain = []
-        for row_number in range(2, group_sheet.max_row + 1):
-            actual_chain.append(
-                (
-                    group_sheet.cell(row_number, header_to_index["Номер_групи"]).value,
-                    group_sheet.cell(row_number, header_to_index["Назва_групи"]).value,
-                    group_sheet.cell(row_number, header_to_index["Номер_батьківської_групи"]).value,
-                )
-            )
-        self.assertEqual(actual_chain, EXPECTED_GROUP_CHAIN)
+        self.assertEqual(group_sheet.max_row, 2)
+        actual_group = {
+            header: group_sheet.cell(2, header_to_index[header]).value
+            for header in EXPECTED_GROUP
+        }
+        self.assertEqual(actual_group, EXPECTED_GROUP)
 
     def test_builds_rows_with_prom_variant_contract(self):
         html = (FIXTURES / "modniy_3064637917.html").read_text(encoding="utf-8")
@@ -65,6 +63,9 @@ class XlsxContractTests(unittest.TestCase):
         self.assertEqual({row["Кількість"] for row in rows}, {"3"})
         self.assertEqual({row["Оптова_ціна"] for row in rows}, {""})
         self.assertEqual({row["Мінімальне_замовлення_опт"] for row in rows}, {""})
+        self.assertEqual({row["Номер_групи"] for row in rows}, {31935910})
+        self.assertEqual({row["Назва_групи"] for row in rows}, {"Купальники"})
+        self.assertEqual({row["Ідентифікатор_групи"] for row in rows}, {"31935910"})
         self.assertEqual({row["Подарунки"] for row in rows}, {""})
         self.assertEqual({row["ID_Подарунків"] for row in rows}, {""})
         self.assertEqual({row["Супутні"] for row in rows}, {""})
@@ -106,6 +107,9 @@ class XlsxContractTests(unittest.TestCase):
             unique_id_col = header_to_index["Унікальний_ідентифікатор"]
             item_id_col = header_to_index["Ідентифікатор_товару"]
             variant_group_col = header_to_index["ID_групи_різновидів"]
+            group_number_col = header_to_index["Номер_групи"]
+            group_name_col = header_to_index["Назва_групи"]
+            group_identifier_col = header_to_index["Ідентифікатор_групи"]
             wholesale_col = header_to_index["Оптова_ціна"]
             min_wholesale_col = header_to_index["Мінімальне_замовлення_опт"]
 
@@ -115,6 +119,9 @@ class XlsxContractTests(unittest.TestCase):
                 self.assertIsNone(sheet.cell(row_number, unique_id_col).value)
                 item_ids.add(sheet.cell(row_number, item_id_col).value)
                 variant_group_values.add(sheet.cell(row_number, variant_group_col).value)
+                self.assertEqual(sheet.cell(row_number, group_number_col).value, 31935910)
+                self.assertEqual(sheet.cell(row_number, group_name_col).value, "Купальники")
+                self.assertEqual(sheet.cell(row_number, group_identifier_col).value, "31935910")
                 self.assertIsNone(sheet.cell(row_number, wholesale_col).value)
                 self.assertIsNone(sheet.cell(row_number, min_wholesale_col).value)
 
@@ -124,16 +131,34 @@ class XlsxContractTests(unittest.TestCase):
             group_sheet = workbook["Export Groups Sheet"]
             group_headers = [cell.value for cell in group_sheet[1]]
             group_header_to_index = {header: index + 1 for index, header in enumerate(group_headers) if header}
-            generated_chain = []
-            for row_number in range(2, group_sheet.max_row + 1):
-                generated_chain.append(
-                    (
-                        group_sheet.cell(row_number, group_header_to_index["Номер_групи"]).value,
-                        group_sheet.cell(row_number, group_header_to_index["Назва_групи"]).value,
-                        group_sheet.cell(row_number, group_header_to_index["Номер_батьківської_групи"]).value,
-                    )
-                )
-            self.assertEqual(generated_chain, EXPECTED_GROUP_CHAIN)
+            self.assertEqual(group_sheet.max_row, 2)
+            generated_group = {
+                header: group_sheet.cell(2, group_header_to_index[header]).value
+                for header in EXPECTED_GROUP
+            }
+            self.assertEqual(generated_group, EXPECTED_GROUP)
+
+    def test_writes_manual_price_override_as_numeric_value(self):
+        html = (FIXTURES / "modniy_2999460479.html").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = generate_import_file_from_html(
+                html,
+                "https://modniy-shopping.com.ua/ua/p2999460479-product.html",
+                template_path=str(TEMPLATE),
+                output_dir=tmpdir,
+                color_id="65",
+                price_override=1000,
+            )
+
+            workbook = load_workbook(output_path, data_only=False)
+            sheet = workbook["Export Products Sheet"]
+            headers = [cell.value for cell in sheet[1]]
+            price_col = headers.index("Ціна") + 1
+            prices = [sheet.cell(row_number, price_col).value for row_number in range(2, sheet.max_row + 1)]
+            data_types = [sheet.cell(row_number, price_col).data_type for row_number in range(2, sheet.max_row + 1)]
+
+        self.assertEqual(prices, [1000, 1000, 1000, 1000, 1000])
+        self.assertEqual(data_types, ["n", "n", "n", "n", "n"])
 
     def test_writes_manual_price_override_as_numeric_value(self):
         html = (FIXTURES / "modniy_2999460479.html").read_text(encoding="utf-8")
