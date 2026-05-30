@@ -35,11 +35,12 @@ source .venv/bin/activate
 Generate an XLSX from a live product page:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000 --position-title "Купальник жіночий чорний" --position-title-ukr "Купальник жіночий чорний"
 ```
 
 `--color-id` is required and must be exactly two digits. It is added to `Код_товару`.
 `--import-price` is required and must be a whole UAH amount. It is written to the Prom `Ціна` column.
+`--position-title` and `--position-title-ukr` are required base titles for `Назва_позиції` and `Назва_позиції_укр`; the generator appends each row's UA size.
 
 By default, generated files are saved to:
 
@@ -56,7 +57,7 @@ output/generated-files/import-products-3064637917.xlsx
 To choose another output directory, pass `--output-dir`:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000 --output-dir output/live-test
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --color-id 65 --import-price 1000 --position-title "Купальник жіночий чорний" --position-title-ukr "Купальник жіночий чорний" --output-dir output/live-test
 ```
 
 ## Local Browser UI
@@ -73,7 +74,7 @@ The app opens at:
 http://127.0.0.1:8000
 ```
 
-It accepts a `modniy-shopping.com.ua` product URL, a required 2-digit color ID, and a required import price in whole UAH, then downloads the generated Prom XLSX file. UI-generated files are saved in unique run folders under:
+It accepts a `modniy-shopping.com.ua` product URL, a required 2-digit color ID, a required import price in whole UAH, and required Prom position titles, then downloads the generated Prom XLSX file. UI-generated files are saved in unique run folders under:
 
 ```text
 output/generated-files/ui-runs/
@@ -106,7 +107,7 @@ These files are generated artifacts and are ignored by git.
 Generate from a local fixture without fetching the live page:
 
 ```bash
-python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000
+python3 generate_import.py "https://modniy-shopping.com.ua/ua/p3064637917-slitnyj-kupalnik-fuba.html" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000 --position-title "Купальник жіночий чорний" --position-title-ukr "Купальник жіночий чорний"
 ```
 
 Run the test suite:

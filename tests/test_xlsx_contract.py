@@ -48,7 +48,12 @@ class XlsxContractTests(unittest.TestCase):
     def test_builds_rows_with_prom_variant_contract(self):
         html = (FIXTURES / "modniy_3064637917.html").read_text(encoding="utf-8")
         product = parse_product_html(html, "https://modniy-shopping.com.ua/ua/p3064637917-product.html")
-        rows = build_xlsx_rows(product, color_id="65")
+        rows = build_xlsx_rows(
+            product,
+            color_id="65",
+            position_title="Купальник жіночий чорний",
+            position_title_ukr="Купальник жіночий чорний",
+        )
 
         self.assertEqual(len(rows), 5)
         group_id = numeric_crc32_group_id("3064637917")
@@ -70,6 +75,20 @@ class XlsxContractTests(unittest.TestCase):
         self.assertEqual({row["ID_Подарунків"] for row in rows}, {""})
         self.assertEqual({row["Супутні"] for row in rows}, {""})
         self.assertEqual({row["ID_Супутніх"] for row in rows}, {""})
+        self.assertEqual([row["Назва_позиції"] for row in rows], [
+            "Купальник жіночий чорний 48",
+            "Купальник жіночий чорний 50",
+            "Купальник жіночий чорний 52",
+            "Купальник жіночий чорний 54",
+            "Купальник жіночий чорний 56",
+        ])
+        self.assertEqual([row["Назва_позиції_укр"] for row in rows], [
+            "Купальник жіночий чорний 48",
+            "Купальник жіночий чорний 50",
+            "Купальник жіночий чорний 52",
+            "Купальник жіночий чорний 54",
+            "Купальник жіночий чорний 56",
+        ])
         self.assertEqual(rows[0]["Опис"].count("<img"), len(product.images))
         self.assertEqual(rows[0]["Опис_укр"].count("<img"), len(product.images))
         self.assertIn('<p style="text-align:center"><img', rows[0]["Опис"])
@@ -94,6 +113,8 @@ class XlsxContractTests(unittest.TestCase):
                 template_path=str(TEMPLATE),
                 output_dir=tmpdir,
                 color_id="65",
+                position_title="Купальник жіночий чорний",
+                position_title_ukr="Купальник жіночий чорний",
             )
 
             workbook = load_workbook(output_path, data_only=False)
@@ -148,6 +169,8 @@ class XlsxContractTests(unittest.TestCase):
                 output_dir=tmpdir,
                 color_id="65",
                 price_override=1000,
+                position_title="Купальник жіночий чорний",
+                position_title_ukr="Купальник жіночий чорний",
             )
 
             workbook = load_workbook(output_path, data_only=False)
@@ -170,6 +193,8 @@ class XlsxContractTests(unittest.TestCase):
                 output_dir=tmpdir,
                 color_id="65",
                 price_override=1000,
+                position_title="Купальник жіночий чорний",
+                position_title_ukr="Купальник жіночий чорний",
             )
 
             workbook = load_workbook(output_path, data_only=False)
@@ -185,7 +210,12 @@ class XlsxContractTests(unittest.TestCase):
     def test_writes_formatted_product_code_for_sku_with_suffix(self):
         html = (FIXTURES / "modniy_3028043687.html").read_text(encoding="utf-8")
         product = parse_product_html(html, "https://modniy-shopping.com.ua/ua/p3028043687-product.html")
-        rows = build_xlsx_rows(product, color_id="65")
+        rows = build_xlsx_rows(
+            product,
+            color_id="65",
+            position_title="Купальник жіночий чорний",
+            position_title_ukr="Купальник жіночий чорний",
+        )
 
         self.assertEqual(product.sku, "58800-25")
         self.assertEqual({row["Код_товару"] for row in rows}, {"MS5880065"})

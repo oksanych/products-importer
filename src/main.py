@@ -14,6 +14,8 @@ def generate_import_file(
     output_dir: str,
     *,
     color_id: str,
+    position_title: str,
+    position_title_ukr: str,
     price_override: int | None = None,
     debug_html: str | None = None,
 ) -> str:
@@ -26,6 +28,8 @@ def generate_import_file(
         template_path,
         output_dir,
         color_id=color_id,
+        position_title=position_title,
+        position_title_ukr=position_title_ukr,
         price_override=price_override,
     )
 
@@ -37,10 +41,18 @@ def generate_import_file_from_html(
     output_dir: str,
     *,
     color_id: str,
+    position_title: str,
+    position_title_ukr: str,
     price_override: int | None = None,
 ) -> str:
     product = parse_product_html(html, product_url)
-    rows = build_xlsx_rows(product, color_id=color_id, price_override=price_override)
+    rows = build_xlsx_rows(
+        product,
+        color_id=color_id,
+        position_title=position_title,
+        position_title_ukr=position_title_ukr,
+        price_override=price_override,
+    )
     validate_rows(rows)
     return write_xlsx_from_template(template_path, rows, output_dir)
 

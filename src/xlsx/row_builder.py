@@ -5,6 +5,7 @@ import zlib
 from src.models.product import Product, SizeVariant
 from src.normalizer.sku import format_product_code
 from src.normalizer.text import build_description, search_queries, title_for_size
+from src.normalizer.title import position_title_for_size, position_title_ukr_for_size
 
 
 GROUP_NUMBER = 31935910
@@ -18,7 +19,14 @@ def numeric_crc32_group_id(product_id: str) -> int:
     return (zlib.crc32(product_id.encode("ascii")) % 900_000_000) + 1
 
 
-def build_xlsx_rows(product: Product, *, color_id: str, price_override: int | None = None) -> list[dict]:
+def build_xlsx_rows(
+    product: Product,
+    *,
+    color_id: str,
+    position_title: str,
+    position_title_ukr: str,
+    price_override: int | None = None,
+) -> list[dict]:
     rows = []
     group_id = str(numeric_crc32_group_id(product.product_id))
     images = ", ".join(product.images)
@@ -32,8 +40,8 @@ def build_xlsx_rows(product: Product, *, color_id: str, price_override: int | No
             "_product_id": product.product_id,
             "_characteristics": build_characteristics(product, size),
             "Код_товару": product_code,
-            "Назва_позиції": title_for_size(product, size.ua_size, "ru"),
-            "Назва_позиції_укр": title_for_size(product, size.ua_size, "uk"),
+            "Назва_позиції": position_title_for_size(position_title, size.ua_size),
+            "Назва_позиції_укр": position_title_ukr_for_size(position_title_ukr, size.ua_size),
             "Пошукові_запити": search_queries(product, "ru"),
             "Пошукові_запити_укр": search_queries(product, "uk"),
             "Опис": description_ru,
