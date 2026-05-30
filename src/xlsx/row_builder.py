@@ -7,8 +7,9 @@ from src.normalizer.sku import format_product_code
 from src.normalizer.text import build_description, search_queries, title_for_size
 
 
-GROUP_NUMBER = "85929329"
+GROUP_NUMBER = 31935910
 GROUP_NAME = "Купальники"
+GROUP_IDENTIFIER = "31935910"
 SUBDIVISION_URL = "https://prom.ua/Kupalniki-zhenskie"
 SUBDIVISION_ID = "31299"
 
@@ -57,7 +58,7 @@ def build_xlsx_rows(product: Product, *, color_id: str, price_override: int | No
             "Унікальний_ідентифікатор": "",
             "Ідентифікатор_товару": f"modniy-{product.product_id}-{size.ua_size}",
             "Ідентифікатор_підрозділу": SUBDIVISION_ID,
-            "Ідентифікатор_групи": "",
+            "Ідентифікатор_групи": GROUP_IDENTIFIER,
             "Виробник": product.brand,
             "Країна_виробник": product.characteristics.get("Країна виробник", ""),
             "Знижка": "",
