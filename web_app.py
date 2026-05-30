@@ -34,9 +34,17 @@ def generate(
     product_url: str = Form(...),
     color_id: str = Form(...),
     import_price: str = Form(...),
+    position_title: str = Form(...),
+    position_title_ukr: str = Form(...),
 ):
     try:
-        generated = generate_from_user_input(product_url, color_id, import_price)
+        generated = generate_from_user_input(
+            product_url,
+            color_id,
+            import_price,
+            position_title,
+            position_title_ukr,
+        )
     except AppServiceError as error:
         if request.headers.get("x-requested-with") == "fetch":
             return JSONResponse(
@@ -49,6 +57,8 @@ def generate(
             product_url=product_url,
             color_id=color_id,
             import_price=import_price,
+            position_title=position_title,
+            position_title_ukr=position_title_ukr,
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -66,6 +76,8 @@ def _render_form(
     product_url: str = "",
     color_id: str = "",
     import_price: str = "",
+    position_title: str = "",
+    position_title_ukr: str = "",
     status_code: int = status.HTTP_200_OK,
 ):
     return templates.TemplateResponse(
@@ -77,6 +89,8 @@ def _render_form(
             "product_url": product_url,
             "color_id": color_id,
             "import_price": import_price,
+            "position_title": position_title,
+            "position_title_ukr": position_title_ukr,
         },
         status_code=status_code,
     )

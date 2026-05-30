@@ -25,13 +25,13 @@ python3 -m unittest discover -s tests -v
 Generate from a live URL:
 
 ```bash
-python3 generate_import.py "<product-url>" --color-id 65 --import-price 1000
+python3 generate_import.py "<product-url>" --color-id 65 --import-price 1000 --position-title "Купальник жіночий чорний" --position-title-ukr "Купальник жіночий чорний"
 ```
 
 Generate from fixture:
 
 ```bash
-python3 generate_import.py "<product-url>" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000
+python3 generate_import.py "<product-url>" --from-html fixtures/modniy_3064637917.html --color-id 65 --import-price 1000 --position-title "Купальник жіночий чорний" --position-title-ukr "Купальник жіночий чорний"
 ```
 
 ## Important Rules
@@ -42,6 +42,8 @@ python3 generate_import.py "<product-url>" --from-html fixtures/modniy_306463791
   - `Export Groups Sheet` must keep only the existing Modashop root category `31935910 / Купальники`.
 - Keep `--color-id` required and exactly two digits.
 - Keep `--import-price` required and a whole UAH amount.
+- Keep `--position-title` and `--position-title-ukr` required.
+- Keep final generated `Назва_позиції` at most 110 characters and `Назва_позиції_укр` at most 130 characters after appending size.
 - `Код_товару` format is `MS` + SKU without trailing `-digits` + color ID.
 - Do not change `Ідентифікатор_товару` format without checking Prom documentation.
 - For new products, keep `Унікальний_ідентифікатор` empty.

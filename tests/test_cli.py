@@ -91,7 +91,61 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("Check price parameter", result.stderr)
 
-    def test_generates_xlsx_with_valid_color_id_and_import_price(self):
+    def test_rejects_missing_position_title_with_clear_message(self):
+        result = self.run_cli(
+            URL,
+            "--from-html",
+            str(FIXTURE),
+            "--template",
+            str(TEMPLATE),
+            "--color-id",
+            "65",
+            "--import-price",
+            "1000",
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Check position title parameter", result.stderr)
+
+    def test_rejects_missing_ukrainian_position_title_with_clear_message(self):
+        result = self.run_cli(
+            URL,
+            "--from-html",
+            str(FIXTURE),
+            "--template",
+            str(TEMPLATE),
+            "--color-id",
+            "65",
+            "--import-price",
+            "1000",
+            "--position-title",
+            "Купальник жіночий",
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Check Ukrainian position title parameter", result.stderr)
+
+    def test_rejects_position_title_that_exceeds_prom_limit_after_size_is_appended(self):
+        result = self.run_cli(
+            URL,
+            "--from-html",
+            str(FIXTURE),
+            "--template",
+            str(TEMPLATE),
+            "--color-id",
+            "65",
+            "--import-price",
+            "1000",
+            "--position-title",
+            "А" * 108,
+            "--position-title-ukr",
+            "Купальник жіночий",
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Check position title parameter", result.stderr)
+
+    def test_generates_xlsx_with_valid_color_id_import_price_and_position_titles(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             result = self.run_cli(
                 URL,
@@ -105,6 +159,10 @@ class CliTests(unittest.TestCase):
                 "65",
                 "--import-price",
                 "1000",
+                "--position-title",
+                "Купальник жіночий чорний",
+                "--position-title-ukr",
+                "Купальник жіночий чорний",
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -114,10 +172,14 @@ class CliTests(unittest.TestCase):
             headers = [cell.value for cell in sheet[1]]
             product_code_col = headers.index("Код_товару") + 1
             price_col = headers.index("Ціна") + 1
+            title_col = headers.index("Назва_позиції") + 1
+            title_ukr_col = headers.index("Назва_позиції_укр") + 1
 
             self.assertEqual(sheet.cell(2, product_code_col).value, "MS5880065")
             self.assertEqual(sheet.cell(2, price_col).value, 1000)
             self.assertEqual(sheet.cell(2, price_col).data_type, "n")
+            self.assertEqual(sheet.cell(2, title_col).value, "Купальник жіночий чорний 52")
+            self.assertEqual(sheet.cell(2, title_ukr_col).value, "Купальник жіночий чорний 52")
 
 
 if __name__ == "__main__":

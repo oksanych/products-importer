@@ -59,6 +59,28 @@
             required
           >
 
+          <label for="position_title">Назва позиції</label>
+          <input
+            id="position_title"
+            name="position_title"
+            type="text"
+            maxlength="107"
+            placeholder="Купальник жіночий чорний"
+            value="{{ position_title }}"
+            required
+          >
+
+          <label for="position_title_ukr">Назва позиції українською</label>
+          <input
+            id="position_title_ukr"
+            name="position_title_ukr"
+            type="text"
+            maxlength="127"
+            placeholder="Купальник жіночий чорний"
+            value="{{ position_title_ukr }}"
+            required
+          >
+
           <button type="submit" data-submit>Згенерувати XLSX</button>
         </form>
       </section>
@@ -115,6 +137,8 @@
         form.elements.namedItem("product_url").value = "";
         form.elements.namedItem("color_id").value = "";
         form.elements.namedItem("import_price").value = "";
+        form.elements.namedItem("position_title").value = "";
+        form.elements.namedItem("position_title_ukr").value = "";
       }
 
       form.addEventListener("submit", async (event) => {
